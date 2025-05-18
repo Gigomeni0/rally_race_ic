@@ -103,3 +103,15 @@ void loop()
 {
   // Nada aqui, o controle é por interrupção de recebimento
 }
+// Ideia de código para enviar dados via ESP-NOW
+/*
+struct struct_message {
+  char direction;
+  uint8_t speed;
+};
+
+struct_message msg = {'F', 150}; // Exemplo: ir para frente com PWM 150
+esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(msg));
+
+
+*/
