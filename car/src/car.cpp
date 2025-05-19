@@ -105,10 +105,9 @@ void setup()
 
 void loop()
 {
-  if (millis() - 5000 > )
-  {
-    Serial.println("Endereço MAC desse carro: ");
-    Serial.println(macAddress);
-  }
+  delay(1000); // Aguarda 1 segundo entre os loops
+  Serial.println("Endereço MAC desse carro: ");
+  Serial.println(macAddress);
+
   // Nada aqui, o controle é por interrupção de recebimento
 }
