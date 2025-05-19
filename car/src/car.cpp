@@ -18,7 +18,8 @@ typedef struct struct_message
 } struct_message;
 
 struct_message incomingCommand;
-
+// Estrutura para armazenar o endereço MAC do dispositivo
+String macAddress;
 // Função para configurar motores
 void setupMotors()
 {
@@ -87,6 +88,9 @@ void setup()
 {
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
+  Serial.print("MAC do ESP32: ");
+  macAddress = WiFi.macAddress();
+  Serial.println(macAddress);
   setupMotors();
 
   // Inicializa ESP-NOW
@@ -101,17 +105,10 @@ void setup()
 
 void loop()
 {
+  if (millis() - 5000 > )
+  {
+    Serial.println("Endereço MAC desse carro: ");
+    Serial.println(macAddress);
+  }
   // Nada aqui, o controle é por interrupção de recebimento
 }
-// Ideia de código para enviar dados via ESP-NOW
-/*
-struct struct_message {
-  char direction;
-  uint8_t speed;
-};
-
-struct_message msg = {'F', 150}; // Exemplo: ir para frente com PWM 150
-esp_now_send(broadcastAddress, (uint8_t *) &msg, sizeof(msg));
-
-
-*/
