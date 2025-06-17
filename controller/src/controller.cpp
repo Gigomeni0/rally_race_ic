@@ -44,13 +44,24 @@ void loop()
     char direction = Serial.read();
     uint8_t speed = Serial.parseInt(); // lê como inteiro
 
-    // Cria um array para a mensagem
-    uint8_t myData[2];
-    myData[0] = (uint8_t)direction;
-    myData[1] = speed;
-
+    // Estrutura da mensagem compatível
+    struct struct_message
+    {
+      int8_t speed;
+      int8_t steering;
+    };
+    struct_message msg;
+    msg.speed = (int8_t)(direction == 'B' ? -speed : speed); // B para backward opcional
+    // leitura de steering após velocidade, ex: F100,-30 ou F100L30: use Serial.parseInt para steering
+    int8_t steering = 0;
+    if (Serial.peek() == ',' || Serial.peek() == 'L' || Serial.peek() == 'R')
+    {
+      Serial.read();
+      steering = (int8_t)Serial.parseInt();
+    }
+    msg.steering = steering;
     // Envia a mensagem via ESP-NOW
-    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&myData, sizeof(myData));
+    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&msg, sizeof(msg));
 
     if (result == ESP_OK)
       Serial.println("Comando enviado via ESP-NOW");

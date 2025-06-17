@@ -13,8 +13,8 @@
 // Estrutura da mensagem
 typedef struct struct_message
 {
-  char direction;
-  uint8_t speed;
+  int8_t speed;    // velocidade (-100 a 100)
+  int8_t steering; // ângulo de direção (-100 a 100)
 } struct_message;
 
 struct_message incomingCommand;
@@ -31,57 +31,52 @@ void setupMotors()
   pinMode(ENB, OUTPUT);
 }
 
-// Controle de motores baseado na direção
-void controlMotors(char direction, uint8_t speed)
+// Controle de motores baseado em velocidade e direção (tank steering)
+void controlMotors(int8_t speed, int8_t steering)
 {
-  switch (direction)
+  // calcula velocidade de cada motor
+  int leftSpeed = speed + steering;
+  int rightSpeed = speed - steering;
+  // limita faixa
+  leftSpeed = constrain(leftSpeed, -255, 255);
+  rightSpeed = constrain(rightSpeed, -255, 255);
+  // aplica direção e PWM no motor esquerdo
+  if (leftSpeed >= 0)
   {
-  case 'F': // Frente
     digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN4, LOW);
-    break;
-  case 'T': // Trás
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN4, HIGH);
-    break;
-  case 'L': // Esquerda
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN4, LOW);
-    break;
-  case 'R': // Direita
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN4, HIGH);
-    break;
-  case 'S': // Parar
-  default:
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, LOW);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN4, LOW);
-    speed = 0;
-    break;
+    analogWrite(ENA, leftSpeed);
   }
-  analogWrite(ENA, speed);
-  analogWrite(ENB, speed);
+  else
+  {
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+    analogWrite(ENA, -leftSpeed);
+  }
+  // aplica direção e PWM no motor direito
+  if (rightSpeed >= 0)
+  {
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+    analogWrite(ENB, rightSpeed);
+  }
+  else
+  {
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
+    analogWrite(ENB, -rightSpeed);
+  }
 }
 
 // Callback para quando um dado é recebido via ESP-NOW
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
   memcpy(&incomingCommand, incomingData, sizeof(incomingCommand));
-  controlMotors(incomingCommand.direction, incomingCommand.speed);
-  Serial.print("Comando recebido: ");
-  Serial.print(incomingCommand.direction);
-  Serial.print(" | Velocidade: ");
-  Serial.println(incomingCommand.speed);
+  controlMotors(incomingCommand.speed, incomingCommand.steering);
+  Serial.print("Comando recebido - Velocidade: ");
+  Serial.print(incomingCommand.speed);
+  Serial.print(" | Direcao: ");
+  Serial.println(incomingCommand.steering);
 }
 
 void setup()
